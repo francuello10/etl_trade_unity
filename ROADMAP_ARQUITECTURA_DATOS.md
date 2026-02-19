@@ -3,7 +3,8 @@
 > **Arquitecto de Datos:** Sistema ETL completo para integración de todas las fuentes de Trade Unity y CEG  
 > **Fecha:** Febrero 2026  
 > **Objetivo:** Convertir sistema de "fotos estáticas" (CSV manuales) a **sistema en tiempo real** con conectores BigQuery/APIs  
-> **Filosofía:** Reportes profesionales actualizables on-demand, código compartible y escalable
+> **Plataforma:** **Google Colab** (100% en línea, spreadsheets automáticos, accesible desde cualquier lugar)  
+> **Filosofía:** Reportes profesionales actualizables on-demand, código compartible y escalable, **diferente a Looker** (este es ETL + análisis, Looker es dashboards)
 
 ---
 
@@ -22,7 +23,7 @@
 
 ### ✅ Lo que ya tenemos funcionando
 
-**Fuentes de Datos Locales (CSV/Excel):**
+**Desarrollo Local (Cursor):**
 - ✅ Catálogo Trade Unity (`fuentes/Catalogo TU.csv`)
 - ✅ Stock ERP (`fuentes/stock erp.csv`)
 - ✅ Precios CEG Plataforma/FOB (`fuentes/Productos plataforma CEG_base price unit & fob_Tabla (2).csv`)
@@ -41,6 +42,19 @@
 - ❌ **Fuentes fragmentadas**: Cada fuente requiere proceso manual
 - ❌ **Sin cruces avanzados**: No hay integración entre CEG y TU
 - ❌ **Sin datos de comportamiento**: No hay GA4 ni Connectif
+- ❌ **Local only**: Requiere ejecutar en máquina local
+- ❌ **Sin automatización**: No hay ejecución programada
+
+### 🎯 Solución: Google Colab
+
+**Ventajas de Colab:**
+- ✅ **100% en línea**: Accesible desde cualquier lugar
+- ✅ **Spreadsheets automáticos**: Escribe directo a Google Sheets
+- ✅ **Ejecución programada**: Google Apps Script puede triggerear Colab
+- ✅ **Gratis**: No requiere infraestructura propia
+- ✅ **Compartible**: Fácil compartir notebooks con el equipo
+- ✅ **Integración nativa**: BigQuery, GA4, Sheets funcionan perfecto
+- ✅ **Diferente a Looker**: Este es ETL + análisis profundo, Looker es dashboards visuales
 
 ---
 
@@ -392,26 +406,34 @@ request = RunReportRequest(
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### Stack Tecnológico Propuesto
+### Stack Tecnológico Propuesto (Google Colab)
 
-**Conexiones:**
-- `google-cloud-bigquery` - BigQuery TU y CEG
-- `google-cloud-analytics-data` - GA4
+**Plataforma:**
+- **Google Colab** - Notebook principal (gratis, en línea)
+- **Google Drive** - Almacenamiento de outputs
+- **Google Sheets** - Spreadsheets automáticos
+- **Google Apps Script** - Automatización y triggers
+
+**Conexiones (en Colab):**
+- `google-cloud-bigquery` - BigQuery TU y CEG (nativo en Colab)
+- `google-cloud-analytics-data` - GA4 (nativo en Colab)
+- `gspread` - Escribir a Google Sheets
+- `google-auth` - Autenticación Google
 - `requests` / `httpx` - APIs REST (Magento, Connectif)
-- `pymysql` / `sqlalchemy` - Bases de datos MySQL (si es necesario)
 
 **Procesamiento:**
 - `pandas` - Manipulación de datos
-- `pyarrow` / `parquet` - Formato de almacenamiento eficiente
-- `dask` - Procesamiento paralelo (si los datos son muy grandes)
+- `numpy` - Cálculos numéricos
+- `openpyxl` - Generar Excel (subir a Drive)
 
-**Orquestación:**
-- `schedule` / `APScheduler` - Tareas programadas
-- `airflow` (opcional) - Orquestación avanzada si crece
+**Almacenamiento:**
+- **Google Sheets** - Datos tabulares (automático)
+- **Google Drive** - Archivos Excel y MD (automático)
+- **Colab Variables** - Cache temporal durante ejecución
 
-**Configuración:**
-- `python-dotenv` - Variables de entorno
-- `pyyaml` - Configuración de conexiones
+**Automatización:**
+- **Google Apps Script** - Triggerear Colab notebook
+- **Colab Scheduler** (opcional) - Ejecución programada directa
 
 ---
 

@@ -2,7 +2,8 @@
 
 > **Arquitecto de Datos:** Sistema ETL completo para integración de todas las fuentes de Trade Unity y CEG  
 > **Fecha:** Febrero 2026  
-> **Objetivo:** Conectar todas las bases de datos para análisis unificado y en tiempo real
+> **Objetivo:** Convertir sistema de "fotos estáticas" (CSV manuales) a **sistema en tiempo real** con conectores BigQuery/APIs  
+> **Filosofía:** Reportes profesionales actualizables on-demand, código compartible y escalable
 
 ---
 
@@ -414,96 +415,174 @@ request = RunReportRequest(
 
 ---
 
-## 🚀 Fases de Implementación
+## 🚀 Fases de Implementación (Tiempos Realistas con Cursor)
 
-### **FASE 1: Fundación (Semanas 1-2)** 🎯 PRIORIDAD CRÍTICA
+> **Nota:** Tiempos estimados asumiendo desarrollo con Cursor AI, conocimiento del dominio ya adquirido, y enfoque en hacerlo "como la gente" (profesional y compartible).
 
-**Objetivo:** Establecer infraestructura base y conectar fuentes críticas
+### **FASE 1: Fundación - BigQuery + Magento (3-4 días)** 🎯 PRIORIDAD CRÍTICA
 
-**Tareas:**
-1. ✅ Crear estructura de Data Warehouse (`data/warehouse/`)
-2. ✅ Configurar autenticación (Google Cloud, APIs)
-3. ✅ Implementar extractor de BigQuery Trade Unity (ventas)
-4. ✅ Implementar extractor de Magento (productos)
-5. ✅ Crear sistema de logging y monitoreo básico
-6. ✅ Documentar credenciales y configuración
+**Objetivo:** Establecer infraestructura base y conectar fuentes críticas en tiempo real
+
+**Tareas y Tiempos:**
+1. **Día 1 - Setup y BigQuery (4-6 horas)**
+   - ✅ Crear estructura de Data Warehouse (`data/warehouse/`)
+   - ✅ Configurar autenticación Google Cloud (service account)
+   - ✅ Implementar extractor BigQuery Trade Unity (ventas)
+   - ✅ Probar conexión y extraer datos de prueba
+   - ✅ Guardar en Parquet (formato eficiente)
+
+2. **Día 2 - Magento API (4-6 horas)**
+   - ✅ Implementar extractor Magento (productos, precios, stock)
+   - ✅ Manejar paginación y rate limiting
+   - ✅ Probar y validar datos extraídos
+   - ✅ Integrar con Data Warehouse
+
+3. **Día 3 - Refactor Scripts Actuales (4-6 horas)**
+   - ✅ Modificar scripts de análisis para leer desde Data Warehouse
+   - ✅ Mantener compatibilidad con CSVs (fallback)
+   - ✅ Probar que los outputs se generen correctamente
+   - ✅ Documentar cambios
+
+4. **Día 4 - Testing y Documentación (2-4 horas)**
+   - ✅ Testing end-to-end
+   - ✅ Documentar configuración y setup
+   - ✅ Crear `.env.example`
+   - ✅ README actualizado
 
 **Entregables:**
-- Scripts de extracción funcionando
-- Data Warehouse con datos de ventas TU y productos Magento
-- Documentación de configuración
+- ✅ Scripts de extracción BigQuery + Magento funcionando
+- ✅ Data Warehouse con datos en tiempo real
+- ✅ Scripts de análisis actualizados (leen desde warehouse)
+- ✅ Documentación completa de setup
+
+**Tiempo Total:** 3-4 días de trabajo enfocado
 
 ---
 
-### **FASE 2: Integración CEG (Semanas 3-4)** 🎯 PRIORIDAD ALTA
+### **FASE 2: Integración CEG (2-3 días)** 🎯 PRIORIDAD ALTA
 
-**Objetivo:** Conectar todas las fuentes CEG y crear cruces
+**Objetivo:** Conectar fuentes CEG y crear cruces inteligentes
 
-**Tareas:**
-1. ✅ Implementar extractor de precios CEG (actualizados)
-2. ✅ Implementar extractor de ventas CEG
-3. ✅ Implementar extractor de clientes CEG
-4. ✅ Crear módulo de cruce CEG-TU (clientes, productos)
-5. ✅ Análisis de clientes que compran en ambos canales
-6. ✅ Análisis de clientes TU que nunca compraron pero sí en CEG
+**Tareas y Tiempos:**
+1. **Día 1 - Precios CEG (4-6 horas)**
+   - ✅ Identificar fuente de precios CEG (BigQuery, Sheets, API)
+   - ✅ Implementar extractor de precios CEG actualizados
+   - ✅ Validar datos y formato
+   - ✅ Integrar con Data Warehouse
+
+2. **Día 2 - Ventas y Clientes CEG (4-6 horas)**
+   - ✅ Implementar extractor de ventas CEG
+   - ✅ Implementar extractor de clientes CEG
+   - ✅ Crear módulo de cruce CEG-TU
+   - ✅ Probar cruces y validar resultados
+
+3. **Día 3 - Análisis de Cruces (2-4 horas)**
+   - ✅ Análisis: clientes que compran en ambos canales
+   - ✅ Análisis: clientes TU que nunca compraron pero sí en CEG
+   - ✅ Análisis: oportunidades de cross-sell
+   - ✅ Agregar insights a outputs
 
 **Entregables:**
-- Datos CEG integrados en Data Warehouse
-- Scripts de cruce CEG-TU funcionando
-- Análisis de oportunidades de cross-sell
+- ✅ Datos CEG integrados en tiempo real
+- ✅ Scripts de cruce CEG-TU funcionando
+- ✅ Análisis de oportunidades en outputs
+
+**Tiempo Total:** 2-3 días
 
 ---
 
-### **FASE 3: Marketing y Comportamiento (Semanas 5-6)** 🎯 PRIORIDAD MEDIA-ALTA
+### **FASE 3: Marketing y Comportamiento (2-3 días)** 🎯 PRIORIDAD MEDIA-ALTA
 
 **Objetivo:** Integrar datos de marketing y comportamiento web
 
-**Tareas:**
-1. ✅ Implementar extractor de Connectif
-2. ✅ Implementar extractor de GA4
-3. ✅ Crear módulo de atribución (qué campaña generó qué venta)
-4. ✅ Análisis de engagement vs conversión
-5. ✅ Scoring de clientes basado en comportamiento
+**Tareas y Tiempos:**
+1. **Día 1 - Connectif (4-6 horas)**
+   - ✅ Investigar API Connectif (documentación)
+   - ✅ Implementar extractor Connectif (campañas, engagement)
+   - ✅ Validar datos y formato
+   - ✅ Integrar con Data Warehouse
+
+2. **Día 2 - GA4 (4-6 horas)**
+   - ✅ Configurar Google Analytics Data API
+   - ✅ Implementar extractor GA4 (sesiones, eventos, conversiones)
+   - ✅ Validar datos y formato
+   - ✅ Integrar con Data Warehouse
+
+3. **Día 3 - Atribución y Scoring (2-4 horas)**
+   - ✅ Crear módulo de atribución (campaña → venta)
+   - ✅ Análisis de engagement vs conversión
+   - ✅ Scoring de clientes basado en comportamiento
+   - ✅ Agregar a outputs
 
 **Entregables:**
-- Datos de Connectif y GA4 en Data Warehouse
-- Análisis de ROI de campañas
-- Scoring de clientes actualizado
+- ✅ Datos Connectif y GA4 en tiempo real
+- ✅ Análisis de ROI de campañas
+- ✅ Scoring de clientes actualizado
+
+**Tiempo Total:** 2-3 días
 
 ---
 
-### **FASE 4: Automatización y Orquestación (Semanas 7-8)** 🎯 PRIORIDAD MEDIA
+### **FASE 4: Automatización y CLI (1-2 días)** 🎯 PRIORIDAD MEDIA
 
-**Objetivo:** Automatizar todo el pipeline ETL
+**Objetivo:** Hacer el sistema fácil de usar y actualizable on-demand
 
-**Tareas:**
-1. ✅ Crear scheduler para ejecuciones automáticas
-2. ✅ Implementar sistema de alertas (errores, datos faltantes)
-3. ✅ Crear dashboard de monitoreo (opcional)
-4. ✅ Optimizar performance (paralelización si es necesario)
-5. ✅ Documentación completa del sistema
+**Tareas y Tiempos:**
+1. **Día 1 - CLI y Orquestación (4-6 horas)**
+   - ✅ Crear CLI principal (`python etl.py update --all`)
+   - ✅ Comandos: `update`, `analyze`, `status`
+   - ✅ Sistema de logging profesional
+   - ✅ Manejo de errores robusto
+
+2. **Día 2 - Scheduler y Alertas (2-4 horas)**
+   - ✅ Scheduler opcional (ejecuciones automáticas)
+   - ✅ Sistema de alertas básico (errores, datos faltantes)
+   - ✅ Documentación de uso
+   - ✅ Testing
 
 **Entregables:**
-- Pipeline ETL completamente automatizado
-- Ejecuciones diarias/semanales programadas
-- Sistema de alertas funcionando
+- ✅ CLI profesional y fácil de usar
+- ✅ Sistema actualizable on-demand
+- ✅ Scheduler opcional para automatización
+
+**Tiempo Total:** 1-2 días
 
 ---
 
-### **FASE 5: Análisis Avanzado (Semanas 9-10)** 🎯 PRIORIDAD BAJA
+### **FASE 5: Polish y Compartibilidad (1 día)** 🎯 PRIORIDAD MEDIA
 
-**Objetivo:** Análisis avanzados con todos los datos integrados
+**Objetivo:** Hacer el repo compartible y profesional
 
-**Tareas:**
-1. ✅ Modelos predictivos (propensión a compra, churn)
-2. ✅ Recomendaciones personalizadas avanzadas
-3. ✅ Análisis de cohortes
-4. ✅ Análisis de lifetime value mejorado
-5. ✅ Dashboard ejecutivo (opcional)
+**Tareas y Tiempos:**
+1. **Día 1 - Documentación y Cleanup (4-6 horas)**
+   - ✅ README completo y profesional
+   - ✅ Documentación de cada extractor
+   - ✅ Ejemplos de uso
+   - ✅ Cleanup de código (comentarios, type hints)
+   - ✅ Requirements.txt actualizado
+   - ✅ .gitignore completo
 
 **Entregables:**
-- Modelos ML básicos funcionando
-- Análisis avanzados en outputs
+- ✅ Repo listo para compartir
+- ✅ Documentación completa
+- ✅ Código limpio y profesional
+
+**Tiempo Total:** 1 día
+
+---
+
+### **RESUMEN DE TIEMPOS**
+
+| Fase | Descripción | Tiempo Estimado |
+|------|-------------|-----------------|
+| **Fase 1** | BigQuery + Magento + Refactor | 3-4 días |
+| **Fase 2** | Integración CEG | 2-3 días |
+| **Fase 3** | Connectif + GA4 | 2-3 días |
+| **Fase 4** | Automatización y CLI | 1-2 días |
+| **Fase 5** | Polish y Compartibilidad | 1 día |
+| **TOTAL** | **Sistema completo en tiempo real** | **9-13 días** |
+
+**Nota:** Tiempos asumen trabajo enfocado con Cursor. Si trabajas part-time, multiplicar por 2-3x.
 
 ---
 
@@ -553,39 +632,113 @@ credentials = service_account.Credentials.from_service_account_file(
 
 ---
 
-## 📝 Próximos Pasos Inmediatos
+## 📝 Plan de Implementación Inmediato
 
-### Esta Semana
+### 🎯 Objetivo: Sistema en Tiempo Real (9-13 días)
 
-1. **Revisar acceso a fuentes:**
-   - [ ] Verificar acceso a BigQuery Trade Unity
-   - [ ] Verificar acceso a API Magento
-   - [ ] Verificar acceso a datos CEG (BigQuery, Sheets, o API)
-   - [ ] Verificar acceso a Connectif API
-   - [ ] Verificar acceso a GA4
+**Filosofía:**
+- ✅ **On-demand updates**: `python etl.py update --all` actualiza todo
+- ✅ **Reportes profesionales**: Excel/MD que se regeneran con datos frescos
+- ✅ **Código compartible**: Bien documentado, limpio, fácil de entender
+- ✅ **Escalable**: Fácil agregar nuevas fuentes
 
-2. **Configurar autenticación:**
-   - [ ] Crear service account para Google Cloud
-   - [ ] Obtener tokens/keys de APIs
-   - [ ] Configurar `.env` con credenciales
+### 📅 Cronograma Detallado
 
-3. **Crear estructura base:**
-   - [ ] Crear carpeta `data/warehouse/`
-   - [ ] Crear carpeta `scripts/extractors/`
-   - [ ] Crear carpeta `scripts/config/`
-   - [ ] Crear `.env.example` (template sin credenciales)
+#### **Semana 1: Fundación (Días 1-4)**
 
-### Próxima Semana
+**Día 1 - Setup y BigQuery (Lunes)**
+```bash
+# Tareas:
+1. Crear estructura de carpetas
+2. Configurar Google Cloud (service account)
+3. Implementar extractor BigQuery
+4. Probar y validar
+```
 
-4. **Implementar primer extractor:**
-   - [ ] BigQuery Trade Unity (ventas)
-   - [ ] Probar conexión y extracción
-   - [ ] Guardar en Data Warehouse (Parquet)
+**Día 2 - Magento API (Martes)**
+```bash
+# Tareas:
+1. Implementar extractor Magento
+2. Manejar paginación y rate limits
+3. Validar datos
+```
 
-5. **Documentar:**
-   - [ ] Documentar proceso de setup
-   - [ ] Documentar estructura de datos extraídos
-   - [ ] Crear guía de troubleshooting
+**Día 3 - Refactor Scripts (Miércoles)**
+```bash
+# Tareas:
+1. Modificar scripts para leer desde warehouse
+2. Mantener fallback a CSVs
+3. Probar outputs
+```
+
+**Día 4 - Testing (Jueves)**
+```bash
+# Tareas:
+1. Testing end-to-end
+2. Documentación
+3. Preparar para Fase 2
+```
+
+#### **Semana 2: CEG + Marketing (Días 5-8)**
+
+**Día 5 - Precios CEG (Viernes)**
+**Día 6 - Ventas/Clientes CEG (Lunes)**
+**Día 7 - Connectif (Martes)**
+**Día 8 - GA4 (Miércoles)**
+
+#### **Semana 3: Automatización + Polish (Días 9-11)**
+
+**Día 9 - CLI y Orquestación (Jueves)**
+**Día 10 - Scheduler (Viernes)**
+**Día 11 - Documentación Final (Lunes)**
+
+---
+
+### 🚀 Comandos que Queremos Tener
+
+```bash
+# Actualizar todos los datos
+python etl.py update --all
+
+# Actualizar solo una fuente
+python etl.py update --bigquery
+python etl.py update --magento
+python etl.py update --ceg
+
+# Generar reportes
+python etl.py analyze --all
+python etl.py analyze --sales
+python etl.py analyze --inventory
+
+# Ver estado
+python etl.py status
+
+# Ver logs
+python etl.py logs --tail
+```
+
+---
+
+### ✅ Checklist de Setup Inicial (Hacer HOY)
+
+**Accesos:**
+- [ ] Verificar acceso a BigQuery Trade Unity
+- [ ] Verificar acceso a API Magento (ya tienes token en `export_ventas_tradeunity.py`)
+- [ ] Verificar acceso a datos CEG (BigQuery, Sheets, o API)
+- [ ] Verificar acceso a Connectif API
+- [ ] Verificar acceso a GA4 (property ID)
+
+**Configuración:**
+- [ ] Crear service account para Google Cloud
+- [ ] Obtener tokens/keys de APIs
+- [ ] Crear `.env` con credenciales
+- [ ] Crear `.env.example` (template)
+
+**Estructura:**
+- [ ] Crear `data/warehouse/` con subcarpetas
+- [ ] Crear `scripts/extractors/`
+- [ ] Crear `scripts/config/`
+- [ ] Actualizar `requirements.txt` con nuevas dependencias
 
 ---
 
@@ -596,13 +749,22 @@ ETL Trade Unity/
 ├── data/
 │   └── warehouse/              # Data Warehouse (nuevo)
 │       ├── bigquery_tu/
+│       │   └── 2026/02/18/sales.parquet
 │       ├── magento/
+│       │   └── products.parquet
 │       ├── ceg/
+│       │   ├── prices.parquet
+│       │   ├── sales.parquet
+│       │   └── clients.parquet
 │       ├── connectif/
+│       │   └── campaigns.parquet
 │       └── ga4/
+│           └── events.parquet
 │
 ├── scripts/
 │   ├── extractors/             # Extractores (nuevo)
+│   │   ├── __init__.py
+│   │   ├── base_extractor.py   # Clase base
 │   │   ├── bigquery_extractor.py
 │   │   ├── magento_extractor.py
 │   │   ├── ceg_extractor.py
@@ -610,21 +772,58 @@ ETL Trade Unity/
 │   │   └── ga4_extractor.py
 │   │
 │   ├── transformers/            # Transformadores (nuevo)
+│   │   ├── __init__.py
 │   │   ├── data_cleaner.py
 │   │   ├── data_enricher.py
 │   │   └── data_merger.py
 │   │
 │   ├── config/                  # Configuración (nuevo)
+│   │   ├── __init__.py
 │   │   ├── connections.yaml
-│   │   └── schedules.yaml
+│   │   └── schemas.yaml         # Esquemas de datos
+│   │
+│   ├── utils/                   # Utilidades (nuevo)
+│   │   ├── __init__.py
+│   │   ├── logger.py
+│   │   ├── storage.py           # Manejo de Parquet
+│   │   └── validators.py
+│   │
+│   ├── etl.py                   # CLI principal (nuevo)
 │   │
 │   └── (scripts actuales)       # Scripts de análisis (mantener)
+│       ├── analisis_inventario.py
+│       ├── analisis_clientes_completo.py
+│       └── ...
 │
 ├── .env                        # Credenciales (no commitear)
 ├── .env.example                # Template de credenciales
 ├── requirements.txt             # Actualizar con nuevas dependencias
-└── ROADMAP_ARQUITECTURA_DATOS.md  # Este archivo
+├── etl.py                      # CLI principal (symlink o wrapper)
+└── ROADMAP_ARQUITECTURA_DATOS.md
 ```
+
+### 🎯 Principios de Diseño
+
+**1. Modularidad:**
+- Cada extractor es independiente
+- Fácil agregar nuevas fuentes
+- Fácil testear individualmente
+
+**2. Resiliencia:**
+- Fallback a datos anteriores si falla extracción
+- Retry logic automático
+- Logging detallado
+
+**3. Performance:**
+- Incremental loads (solo datos nuevos)
+- Particionado por fecha
+- Compresión Parquet
+
+**4. Compartibilidad:**
+- Código limpio y documentado
+- Type hints en Python
+- README completo
+- Ejemplos de uso
 
 ---
 

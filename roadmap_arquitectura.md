@@ -821,7 +821,7 @@ ETL Trade Unity/
 ├── .env.example                # Template de credenciales
 ├── requirements.txt             # Actualizar con nuevas dependencias
 ├── etl.py                      # CLI principal (symlink o wrapper)
-└── ROADMAP_ARQUITECTURA_DATOS.md
+└── roadmap_arquitectura.md
 ```
 
 ### 🎯 Principios de Diseño

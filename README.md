@@ -132,7 +132,7 @@ ETL Trade Unity/
 - ✅ Accesible desde cualquier lugar
 - ✅ No requiere instalación local
 - ✅ Automatización con Apps Script
-- Ver: [COLAB_SETUP.md](./COLAB_SETUP.md)
+- Ver: [colab_setup.md](./colab_setup.md)
 
 **Opción 2: Local (Cursor/IDE)**
 - ✅ Desarrollo y testing
@@ -167,7 +167,7 @@ pip install -r requirements.txt
 
 ### Setup en Google Colab
 
-Ver guía completa en [COLAB_SETUP.md](./COLAB_SETUP.md)
+Ver guía completa en [colab_setup.md](./colab_setup.md)
 
 **Resumen rápido:**
 1. Crear notebook en [Google Colab](https://colab.research.google.com/)
@@ -325,8 +325,8 @@ Este proyecto es de uso interno del grupo CEG.
 ### Próximos Pasos
 
 Ver documentación completa:
-- **[ROADMAP_ARQUITECTURA_DATOS.md](./ROADMAP_ARQUITECTURA_DATOS.md)** - Plan completo de integración de fuentes
-- **[COLAB_SETUP.md](./COLAB_SETUP.md)** - Guía de setup en Google Colab
+- **[roadmap_arquitectura.md](./roadmap_arquitectura.md)** - Plan completo de integración de fuentes
+- **[colab_setup.md](./colab_setup.md)** - Guía de setup en Google Colab
 
 ### Fuentes a Integrar
 

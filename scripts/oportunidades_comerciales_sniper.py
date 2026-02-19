@@ -2,10 +2,14 @@
 """
 Oportunidades Comerciales Tipo Sniper - Trade Unity
 
-Análisis para identificar oportunidades de venta puntual:
-1. Clientes que "barren stock" - compraron significativamente SKUs que ahora están en stock 0
-2. Clientes que compraron fuerte un SKU y ahora hay stock nuevo disponible
-3. Oportunidades de precio - clientes que compraron más barato que precio actual publicado
+ENFOQUE: VENDER EL STOCK ACTUAL (no reposición)
+
+Análisis para identificar oportunidades de venta puntual del stock disponible:
+1. Clientes que barrieron un producto y hay productos relacionados/familia en stock actual
+2. Clientes que compraron fuerte un producto y hay productos relacionados/complementarios en stock (upselling)
+3. Clientes que barrieron stock de un producto específico (muestra capacidad de compra)
+4. Oportunidades de precio - clientes que compraron más barato que precio actual publicado
+5. Recompra (menor importancia) - clientes que compraron fuerte y hay stock nuevo
 
 Genera Excel con oportunidades comerciales accionables para el equipo de ventas.
 """
@@ -171,12 +175,188 @@ def load_precios_actuales():
     return df[['sku', 'Precio Actual Publicado']]
 
 
+def obtener_productos_relacionados(sku, catalog_df_indexed, stock_df, ventas_df):
+    """
+    Identifica productos relacionados por:
+    - Misma marca
+    - Misma categoría (2° nivel)
+    """
+    try:
+        if sku not in catalog_df_indexed.index:
+            return []
+        
+        producto = catalog_df_indexed.loc[sku]
+        
+        # Obtener marca y categoría
+        marca = str(producto.get('Marca', '') or producto.get('Brand Name CEG', '')).strip()
+        categoria_2 = str(producto.get('Categoría (2° Nivel)', '')).strip()
+        
+        if not marca and not categoria_2:
+            return []
+        
+        # Filtrar productos relacionados (excluyendo el mismo SKU)
+        mask = (catalog_df_indexed.index != sku)
+        if marca:
+            mask = mask & (catalog_df_indexed['Marca'].fillna('').astype(str).str.strip() == marca)
+        if categoria_2:
+            mask = mask & (catalog_df_indexed['Categoría (2° Nivel)'].fillna('').astype(str).str.strip() == categoria_2)
+        
+        relacionados = catalog_df_indexed[mask].copy()
+        
+        if len(relacionados) == 0:
+            return []
+        
+        # Obtener stock disponible de productos relacionados
+        stock_map = dict(zip(
+            stock_df['D365 Reference'].str.upper().str.strip(),
+            stock_df['Stock Unidades']
+        ))
+        
+        # Mapear SKU a D365 Reference desde catálogo original
+        catalog_original = catalog_df_indexed.reset_index()
+        sku_to_d365 = dict(zip(
+            catalog_original['sku'].str.upper().str.strip(),
+            catalog_original['Código de Producto (D365)'].fillna('').astype(str).str.upper().str.strip()
+        ))
+        
+        productos_con_stock = []
+        for sku_rel in relacionados.index:
+            d365_ref = sku_to_d365.get(str(sku_rel).upper().strip(), '')
+            stock_disponible = stock_map.get(d365_ref, 0)
+            
+            if stock_disponible > 0:
+                productos_con_stock.append({
+                    'SKU': sku_rel,
+                    'Nombre Producto': str(relacionados.loc[sku_rel, 'Nombre del Producto']),
+                    'Stock Disponible': stock_disponible,
+                    'Marca': marca,
+                    'Categoría': categoria_2
+                })
+        
+        return productos_con_stock
+    except Exception as e:
+        print(f"   ⚠️  Error obteniendo productos relacionados para {sku}: {e}")
+        return []
+
+
+def analizar_productos_relacionados_stock(ventas_df, stock_df, catalog_df):
+    """
+    PRIORIDAD 1: Clientes que barrieron un producto y hay productos relacionados/familia en stock actual.
+    Oportunidad de vender productos relacionados del stock disponible.
+    """
+    print("🎯 Analizando clientes que barrieron productos relacionados (stock disponible)...")
+    
+    # Preparar catálogo con índice SKU
+    catalog_df_indexed = catalog_df.set_index('sku')
+    
+    # Obtener SKUs con stock disponible
+    stock_disponible = stock_df[stock_df['Stock Unidades'] > 0].copy()
+    skus_con_stock = set(stock_df['D365 Reference'].str.upper().str.strip())
+    
+    # Mapear D365 a SKU
+    d365_to_sku = dict(zip(
+        catalog_df['Código de Producto (D365)'].str.upper().str.strip(),
+        catalog_df['sku'].str.upper().str.strip()
+    ))
+    
+    # Identificar clientes que barrieron stock (compraron significativamente)
+    ventas_df['SKU_Upper'] = ventas_df['SKU'].str.upper().str.strip()
+    
+    # Agrupar por cliente y SKU para identificar compras significativas
+    compras_por_cliente_sku = ventas_df.groupby(['Email Cliente', 'SKU']).agg({
+        'Cantidad Unitarias': 'sum',
+        'Total Item con IVA': 'sum',
+        'Fecha Creación': 'max',
+        'Número de Orden': 'nunique',
+        'Precio Venta Unitario': 'mean',
+        'Nombre Cliente': 'first',
+        'Categoría (2° Nivel)': 'first',
+        'Brand Name CEG': 'first',
+        'Nombre Producto': 'first'
+    }).reset_index()
+    
+    # Renombrar columna para consistencia
+    compras_por_cliente_sku = compras_por_cliente_sku.rename(columns={'Número de Orden': 'Número de Órdenes'})
+    
+    # Calcular umbrales por SKU
+    umbrales_por_sku = ventas_df.groupby('SKU')['Cantidad Unitarias'].quantile(0.75)
+    
+    # Filtrar compras significativas (percentil 75 o mínimo 50 unidades)
+    compras_significativas = compras_por_cliente_sku[
+        compras_por_cliente_sku.apply(
+            lambda row: row['Cantidad Unitarias'] >= max(umbrales_por_sku.get(row['SKU'], 0), 50),
+            axis=1
+        )
+    ]
+    
+    oportunidades = []
+    
+    for _, compra in compras_significativas.iterrows():
+        sku_comprado = compra['SKU'].upper().strip()
+        
+        # Obtener productos relacionados con stock disponible
+        productos_relacionados = obtener_productos_relacionados(
+            sku_comprado, 
+            catalog_df_indexed, 
+            stock_df, 
+            ventas_df
+        )
+        
+        if len(productos_relacionados) > 0:
+            # Calcular stock total disponible de productos relacionados
+            stock_total_relacionados = sum(p['Stock Disponible'] for p in productos_relacionados)
+            
+            # Obtener capacidad de compra del cliente
+            capacidad_compra = compra['Cantidad Unitarias'] / compra['Número de Órdenes'] if compra['Número de Órdenes'] > 0 else compra['Cantidad Unitarias']
+            
+            oportunidades.append({
+                'Email Cliente': compra['Email Cliente'],
+                'Nombre Cliente': compra['Nombre Cliente'],
+                'SKU Comprado (Barrió)': sku_comprado,
+                'Producto Comprado': compra['Nombre Producto'],
+                'Unidades Compradas (Histórico)': compra['Cantidad Unitarias'],
+                'Capacidad de Compra Promedio': capacidad_compra,
+                'Productos Relacionados Disponibles': len(productos_relacionados),
+                'Stock Total Relacionados': stock_total_relacionados,
+                'Marca': compra['Brand Name CEG'],
+                'Categoría': compra['Categoría (2° Nivel)'],
+                'Total Facturación Histórica (USD)': compra['Total Item con IVA'],
+                'Última Compra': compra['Fecha Creación'],
+                'Días desde Última Compra': (datetime.now() - compra['Fecha Creación']).days if pd.notna(compra['Fecha Creación']) else None,
+                'Tipo Oportunidad': 'Productos Relacionados - Stock Disponible',
+                'Prioridad': 'ALTA',
+                'Mensaje Comercial': f"Cliente barrió {compra['Nombre Producto']}. Hay {len(productos_relacionados)} productos relacionados de {compra['Brand Name CEG']} en stock ({int(stock_total_relacionados)} unidades). Oportunidad de upselling/familia."
+            })
+    
+    df_oportunidades = pd.DataFrame(oportunidades)
+    
+    if len(df_oportunidades) > 0:
+        df_oportunidades = df_oportunidades.sort_values('Stock Total Relacionados', ascending=False)
+        print(f"   ✅ {len(df_oportunidades)} oportunidades de productos relacionados identificadas")
+    else:
+        print("   ⚠️  No se encontraron oportunidades de productos relacionados")
+    
+    return df_oportunidades
+
+
+def analizar_upselling_stock_actual(ventas_df, stock_df, catalog_df):
+    """
+    PRIORIDAD 2: Clientes que compraron fuerte un producto y hay productos relacionados/complementarios en stock.
+    Oportunidad de upselling con stock disponible.
+    """
+    print("🎯 Analizando oportunidades de upselling (stock disponible)...")
+    
+    # Similar a productos relacionados pero enfocado en complementarios/upselling
+    # Por ahora usar misma lógica pero con enfoque diferente
+    return analizar_productos_relacionados_stock(ventas_df, stock_df, catalog_df)
+
+
 def analizar_clientes_barren_stock(ventas_df, stock_df, catalog_df):
     """
-    Identifica clientes que compraron significativamente SKUs que ahora están en stock 0.
-    Estos son clientes con capacidad de "limpiar stocks".
+    PRIORIDAD 3: Clientes que barrieron stock de un producto específico (ya no está en stock).
+    Muestra capacidad de compra, útil para identificar clientes con capacidad de limpiar stocks.
     """
-    print("🎯 Analizando clientes que barren stock...")
+    print("🎯 Analizando clientes que barrieron stock (capacidad de compra)...")
     
     # Obtener SKUs en stock 0
     stock_cero = stock_df[stock_df['Stock Unidades'] == 0].copy()
@@ -265,10 +445,10 @@ def analizar_clientes_barren_stock(ventas_df, stock_df, catalog_df):
 
 def analizar_stock_nuevo_recompra(ventas_df, stock_df, catalog_df):
     """
-    Identifica clientes que compraron fuerte un SKU y ahora hay stock nuevo disponible.
-    Oportunidad de recompra.
+    PRIORIDAD 5 (MENOR IMPORTANCIA): Clientes que compraron fuerte un SKU y ahora hay stock nuevo disponible.
+    Oportunidad de recompra - mantener pero con menor importancia.
     """
-    print("🎯 Analizando oportunidades de recompra (stock nuevo)...")
+    print("🎯 Analizando oportunidades de recompra (stock nuevo) - MENOR PRIORIDAD...")
     
     # Obtener SKUs con stock disponible (>0)
     stock_disponible = stock_df[stock_df['Stock Unidades'] > 0].copy()
@@ -348,8 +528,8 @@ def analizar_stock_nuevo_recompra(ventas_df, stock_df, catalog_df):
                 'Número de Órdenes': num_ordenes,
                 'Última Compra': ultima_compra,
                 'Días desde Última Compra': (datetime.now() - ultima_compra).days if pd.notna(ultima_compra) else None,
-                'Tipo Oportunidad': 'Stock Nuevo - Recompra',
-                'Prioridad': 'ALTA' if total_unidades >= 200 and stock_actual >= 100 else 'MEDIA',
+                'Tipo Oportunidad': 'Recompra (Stock Nuevo)',
+                'Prioridad': 'BAJA',  # Menor prioridad - enfoque en stock actual, no reposición
                 'Mensaje Comercial': f"Cliente compró {int(total_unidades)} unidades históricamente. Stock nuevo disponible: {int(stock_actual)} unidades. Oportunidad de recompra."
             })
     
@@ -505,14 +685,20 @@ def generate_sniper_report():
         print("❌ No hay datos de ventas. Abortando.")
         return
     
-    # Análisis 1: Clientes que barren stock
+    # PRIORIDAD 1: Productos relacionados con stock disponible
+    oportunidades_relacionados = analizar_productos_relacionados_stock(ventas_df, stock_df, catalog_df)
+    
+    # PRIORIDAD 2: Upselling con stock disponible
+    oportunidades_upselling = analizar_upselling_stock_actual(ventas_df, stock_df, catalog_df)
+    
+    # PRIORIDAD 3: Clientes que barrieron stock (muestra capacidad)
     oportunidades_barren = analizar_clientes_barren_stock(ventas_df, stock_df, catalog_df)
     
-    # Análisis 2: Stock nuevo - recompra
-    oportunidades_recompra = analizar_stock_nuevo_recompra(ventas_df, stock_df, catalog_df)
-    
-    # Análisis 3: Oportunidades de precio
+    # PRIORIDAD 4: Oportunidades de precio
     oportunidades_precio = analizar_oportunidades_precio(ventas_df, precios_df)
+    
+    # PRIORIDAD 5: Recompra (menor importancia)
+    oportunidades_recompra = analizar_stock_nuevo_recompra(ventas_df, stock_df, catalog_df)
     
     # Crear Excel
     print(f"\n💾 Creando archivo Excel: {OUTPUT_EXCEL}")
@@ -520,40 +706,77 @@ def generate_sniper_report():
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     
     with pd.ExcelWriter(OUTPUT_EXCEL, engine='openpyxl') as writer:
-        # Hoja 1: Resumen Ejecutivo
-        todas_oportunidades = pd.concat([
-            oportunidades_barren,
-            oportunidades_recompra,
-            oportunidades_precio
-        ], ignore_index=True)
+        # Concatenar todas las oportunidades (solo las que tienen datos)
+        todas_oportunidades_list = []
+        if len(oportunidades_relacionados) > 0:
+            todas_oportunidades_list.append(oportunidades_relacionados)
+        if len(oportunidades_upselling) > 0:
+            todas_oportunidades_list.append(oportunidades_upselling)
+        if len(oportunidades_barren) > 0:
+            todas_oportunidades_list.append(oportunidades_barren)
+        if len(oportunidades_precio) > 0:
+            todas_oportunidades_list.append(oportunidades_precio)
+        if len(oportunidades_recompra) > 0:
+            todas_oportunidades_list.append(oportunidades_recompra)
+        
+        if len(todas_oportunidades_list) > 0:
+            todas_oportunidades = pd.concat(todas_oportunidades_list, ignore_index=True)
+            
+            # Calcular totales únicos
+            try:
+                if 'SKU Comprado (Barrió)' in todas_oportunidades.columns:
+                    total_oportunidades_unicas = len(todas_oportunidades.drop_duplicates(subset=['Email Cliente', 'SKU Comprado (Barrió)']))
+                    total_skus_unicos = len(todas_oportunidades['SKU Comprado (Barrió)'].unique())
+                elif 'SKU' in todas_oportunidades.columns:
+                    total_oportunidades_unicas = len(todas_oportunidades.drop_duplicates(subset=['Email Cliente', 'SKU']))
+                    total_skus_unicos = len(todas_oportunidades['SKU'].unique())
+                else:
+                    total_oportunidades_unicas = len(todas_oportunidades.drop_duplicates(subset=['Email Cliente']))
+                    total_skus_unicos = 0
+            except:
+                total_oportunidades_unicas = len(todas_oportunidades)
+                total_skus_unicos = 0
+        else:
+            todas_oportunidades = pd.DataFrame()
+            total_oportunidades_unicas = 0
+            total_skus_unicos = 0
         
         resumen_data = {
             'Métrica': [
-                'Clientes que Barren Stock',
-                'Oportunidades de Recompra (Stock Nuevo)',
-                'Oportunidades de Precio',
+                '🎯 PRODUCTOS RELACIONADOS (Stock Disponible)',
+                '🎯 UPSELLING (Stock Disponible)',
+                '📊 Clientes que Barren Stock (Capacidad)',
+                '💰 Oportunidades de Precio',
+                '🔄 Recompra (Menor Prioridad)',
                 '',
                 'Total Oportunidades Únicas',
                 'Total Clientes Únicos',
                 'Total SKUs Únicos',
                 '',
-                '⚠️ NOTA IMPORTANTE',
+                '⚠️ ENFOQUE: VENDER STOCK ACTUAL',
                 '',
-                'Este análisis identifica oportunidades comerciales tipo "sniper" para venta puntual.',
-                'Los datos de stock son del momento actual. No tenemos historial de stock durante el tiempo.',
-                'Las oportunidades se basan en:',
-                '1. Clientes que compraron significativamente SKUs que ahora están en stock 0',
-                '2. Clientes que compraron fuerte un SKU y ahora hay stock nuevo disponible',
-                '3. Clientes que compraron a precio más barato que el actual publicado (liquidación enero/febrero 2026)'
+                'Este análisis identifica oportunidades comerciales tipo "sniper" para VENDER EL STOCK DISPONIBLE.',
+                'NO está enfocado en reposición, sino en maximizar ventas del inventario actual.',
+                '',
+                'Prioridades:',
+                '1. Productos relacionados/familia en stock (cliente barrió uno, hay otros relacionados)',
+                '2. Upselling con stock disponible (cliente compró fuerte, hay complementarios)',
+                '3. Clientes que barrieron stock (muestra capacidad de compra)',
+                '4. Oportunidades de precio (compró más barato que actual)',
+                '5. Recompra (menor importancia - enfoque en stock actual)'
             ],
             'Cantidad': [
+                len(oportunidades_relacionados),
+                len(oportunidades_upselling),
                 len(oportunidades_barren),
-                len(oportunidades_recompra),
                 len(oportunidades_precio),
+                len(oportunidades_recompra),
                 '',
-                len(todas_oportunidades.drop_duplicates(subset=['Email Cliente', 'SKU'])),
-                len(todas_oportunidades['Email Cliente'].unique()),
-                len(todas_oportunidades['SKU'].unique()),
+                total_oportunidades_unicas,
+                len(todas_oportunidades['Email Cliente'].unique()) if len(todas_oportunidades) > 0 else 0,
+                total_skus_unicos,
+                '',
+                '',
                 '',
                 '',
                 '',
@@ -565,52 +788,74 @@ def generate_sniper_report():
                 ''
             ]
         }
-        resumen_df = pd.DataFrame(resumen_data)
-        resumen_df.to_excel(writer, sheet_name='00_Resumen Ejecutivo', index=False)
-        auto_adjust_column_widths(writer, '00_Resumen Ejecutivo', resumen_df)
+        # Asegurar que ambos arrays tengan la misma longitud
+        metricas = resumen_data['Métrica']
+        cantidades = resumen_data['Cantidad']
+        max_len = max(len(metricas), len(cantidades))
+        metricas = metricas + [''] * (max_len - len(metricas))
+        cantidades = cantidades + [''] * (max_len - len(cantidades))
+        resumen_data = {'Métrica': metricas, 'Cantidad': cantidades}
         
-        # Hoja 2: Clientes que Barren Stock
+        try:
+            resumen_df = pd.DataFrame(resumen_data)
+            resumen_df.to_excel(writer, sheet_name='00_Resumen Ejecutivo', index=False)
+            auto_adjust_column_widths(writer, '00_Resumen Ejecutivo', resumen_df)
+        except Exception as e:
+            print(f"   ⚠️  Error creando resumen: {e}")
+            # Crear resumen simple si falla
+            pd.DataFrame({'Métrica': ['Error al generar resumen'], 'Cantidad': [str(e)]}).to_excel(
+                writer, sheet_name='00_Resumen Ejecutivo', index=False
+            )
+        
+        # PRIORIDAD 1: Productos Relacionados (Stock Disponible)
+        if len(oportunidades_relacionados) > 0:
+            oportunidades_relacionados.to_excel(writer, sheet_name='01_Productos Relacionados (Stock)', index=False)
+            auto_adjust_column_widths(writer, '01_Productos Relacionados (Stock)', oportunidades_relacionados)
+        
+        # PRIORIDAD 2: Upselling (Stock Disponible) - Por ahora igual que relacionados
+        if len(oportunidades_upselling) > 0:
+            oportunidades_upselling.to_excel(writer, sheet_name='02_Upselling (Stock)', index=False)
+            auto_adjust_column_widths(writer, '02_Upselling (Stock)', oportunidades_upselling)
+        
+        # PRIORIDAD 3: Clientes que Barren Stock (Capacidad)
         if len(oportunidades_barren) > 0:
-            oportunidades_barren.to_excel(writer, sheet_name='01_Barren Stock', index=False)
-            auto_adjust_column_widths(writer, '01_Barren Stock', oportunidades_barren)
+            oportunidades_barren.to_excel(writer, sheet_name='03_Barren Stock (Capacidad)', index=False)
+            auto_adjust_column_widths(writer, '03_Barren Stock (Capacidad)', oportunidades_barren)
             
             # Resumen por rubro y marca
             resumen_barren = generar_resumen_por_rubro_marca(oportunidades_barren)
             if len(resumen_barren) > 0:
-                resumen_barren.to_excel(writer, sheet_name='02_Resumen Barren Stock (Rubro-Marca)', index=False)
-                auto_adjust_column_widths(writer, '02_Resumen Barren Stock (Rubro-Marca)', resumen_barren)
+                resumen_barren.to_excel(writer, sheet_name='04_Resumen Barren Stock (Rubro-Marca)', index=False)
+                auto_adjust_column_widths(writer, '04_Resumen Barren Stock (Rubro-Marca)', resumen_barren)
         
-        # Hoja 3: Stock Nuevo - Recompra
-        if len(oportunidades_recompra) > 0:
-            oportunidades_recompra.to_excel(writer, sheet_name='03_Stock Nuevo Recompra', index=False)
-            auto_adjust_column_widths(writer, '03_Stock Nuevo Recompra', oportunidades_recompra)
-            
-            # Resumen por rubro y marca
-            resumen_recompra = generar_resumen_por_rubro_marca(oportunidades_recompra)
-            if len(resumen_recompra) > 0:
-                resumen_recompra.to_excel(writer, sheet_name='04_Resumen Recompra (Rubro-Marca)', index=False)
-                auto_adjust_column_widths(writer, '04_Resumen Recompra (Rubro-Marca)', resumen_recompra)
-        
-        # Hoja 4: Oportunidades de Precio
+        # PRIORIDAD 4: Oportunidades de Precio
         if len(oportunidades_precio) > 0:
             oportunidades_precio.to_excel(writer, sheet_name='05_Oportunidades Precio', index=False)
             auto_adjust_column_widths(writer, '05_Oportunidades Precio', oportunidades_precio)
         
-        # Hoja 5: Todas las Oportunidades (Vista Sniper)
+        # PRIORIDAD 5: Recompra (Menor Importancia)
+        if len(oportunidades_recompra) > 0:
+            oportunidades_recompra.to_excel(writer, sheet_name='06_Recompra (Menor Prioridad)', index=False)
+            auto_adjust_column_widths(writer, '06_Recompra (Menor Prioridad)', oportunidades_recompra)
+        
+        # Hoja Final: Todas las Oportunidades (Vista Sniper) - SIEMPRE crear esta hoja
         if len(todas_oportunidades) > 0:
             # Ordenar por prioridad y facturación histórica
-            todas_oportunidades['Prioridad_Num'] = todas_oportunidades['Prioridad'].map({'ALTA': 1, 'MEDIA': 2, 'BAJA': 3})
-            todas_oportunidades = todas_oportunidades.sort_values(['Prioridad_Num', 'Total Facturación Histórica (USD)'], ascending=[True, False])
-            todas_oportunidades = todas_oportunidades.drop('Prioridad_Num', axis=1)
+            if 'Prioridad' in todas_oportunidades.columns:
+                todas_oportunidades['Prioridad_Num'] = todas_oportunidades['Prioridad'].map({'ALTA': 1, 'MEDIA': 2, 'BAJA': 3}).fillna(2)
+                todas_oportunidades = todas_oportunidades.sort_values(['Prioridad_Num', 'Total Facturación Histórica (USD)'], ascending=[True, False])
+                todas_oportunidades = todas_oportunidades.drop('Prioridad_Num', axis=1)
             
-            todas_oportunidades.to_excel(writer, sheet_name='06_Todas Oportunidades Sniper', index=False)
-            auto_adjust_column_widths(writer, '06_Todas Oportunidades Sniper', todas_oportunidades)
+            todas_oportunidades.to_excel(writer, sheet_name='07_Todas Oportunidades Sniper', index=False)
+            auto_adjust_column_widths(writer, '07_Todas Oportunidades Sniper', todas_oportunidades)
     
     print(f"\n✅ Reporte generado: {OUTPUT_EXCEL}")
-    print(f"\n📊 Resumen:")
-    print(f"   - Clientes que barren stock: {len(oportunidades_barren)}")
-    print(f"   - Oportunidades de recompra: {len(oportunidades_recompra)}")
-    print(f"   - Oportunidades de precio: {len(oportunidades_precio)}")
+    print(f"\n📊 Resumen (ENFOQUE: VENDER STOCK ACTUAL):")
+    print(f"   🎯 Productos Relacionados (Stock Disponible): {len(oportunidades_relacionados)}")
+    print(f"   🎯 Upselling (Stock Disponible): {len(oportunidades_upselling)}")
+    print(f"   📊 Clientes que barren stock (capacidad): {len(oportunidades_barren)}")
+    print(f"   💰 Oportunidades de precio: {len(oportunidades_precio)}")
+    print(f"   🔄 Recompra (menor prioridad): {len(oportunidades_recompra)}")
     print(f"   - Total oportunidades: {len(todas_oportunidades)}")
 
 

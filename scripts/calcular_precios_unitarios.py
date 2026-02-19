@@ -8,8 +8,8 @@ import csv
 from decimal import Decimal, InvalidOperation
 
 # Archivos
-INPUT_CSV = "ventas_historicas_items_FINAL.csv"
-OUTPUT_CSV = "ventas_historicas_items_FINAL.csv"
+INPUT_CSV = "ventas_historicas_items.csv"
+OUTPUT_CSV = "ventas_historicas_items.csv"
 
 # Columnas de precios por CAJA (de Magento) que hay que convertir a unitarios
 PRECIOS_POR_CAJA = [

@@ -15,7 +15,7 @@ except ImportError:
     HAS_PANDAS = False
 
 # Archivos
-VENTAS_CSV = "ventas_historicas_items_FINAL.csv"
+VENTAS_CSV = "ventas_historicas_items.csv"
 OUTPUT_EXCEL = "EXCEL_COMPLETO_VENTAS_TradeUnity.xlsx"
 
 

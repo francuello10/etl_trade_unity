@@ -22,7 +22,7 @@ except ImportError:
     HAS_PANDAS = False
 
 # Archivos
-VENTAS_CSV = "inputs/ventas_historicas_items_FINAL.csv"
+VENTAS_CSV = "inputs/ventas_historicas_items.csv"
 OUTPUT_DIR = "outputs"
 OUTPUT_EXCEL = f"{OUTPUT_DIR}/TradeUnity Customer Intelligence.xlsx"
 

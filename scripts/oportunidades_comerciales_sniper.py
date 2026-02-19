@@ -28,12 +28,12 @@ except ImportError:
     HAS_OPENPYXL = False
 
 # Archivos
-VENTAS_CSV = "inputs/ventas_historicas_items_FINAL.csv"
-STOCK_ERP = "fuentes/stock erp.csv"
-CATALOGO_TU = "fuentes/Catalogo TU.csv"
-PUBLICACIONES_CSV = "fuentes/Publicaciones de productos.csv"
+VENTAS_CSV = "inputs/ventas_historicas_items.csv"
+STOCK_ERP = "fuentes/stock_erp.csv"
+CATALOGO_TU = "fuentes/catalogo_trade_unity.csv"
+PUBLICACIONES_CSV = "fuentes/publicaciones_productos.csv"
 OUTPUT_DIR = "outputs"
-OUTPUT_EXCEL = f"{OUTPUT_DIR}/TradeUnity Oportunidades Comerciales Sniper.xlsx"
+OUTPUT_EXCEL = f"{OUTPUT_DIR}/TradeUnity_Sniper_Commercial_Opportunities.xlsx"
 
 
 def parse_decimal(value: str) -> float:

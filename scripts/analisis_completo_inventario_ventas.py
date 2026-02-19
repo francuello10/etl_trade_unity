@@ -20,9 +20,9 @@ except ImportError:
     HAS_PANDAS = False
 
 # Archivos
-CATALOGO_TU = "fuentes/Catalogo TU.csv"
-STOCK_ERP = "fuentes/stock erp.csv"
-VENTAS_CSV = "ventas_historicas_items_FINAL.csv"
+CATALOGO_TU = "fuentes/catalogo_trade_unity.csv"
+STOCK_ERP = "fuentes/stock_erp.csv"
+VENTAS_CSV = "inputs/ventas_historicas_items.csv"
 OUTPUT_EXCEL = "MEGA_ANALISIS_Completo_TradeUnity.xlsx"
 
 

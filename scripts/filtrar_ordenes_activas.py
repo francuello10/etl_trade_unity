@@ -8,8 +8,8 @@ Procesando, En_Transito
 import csv
 
 # Archivos
-INPUT_CSV = "ventas_historicas_items_FINAL.csv"
-OUTPUT_CSV = "ventas_historicas_items_FINAL.csv"
+INPUT_CSV = "ventas_historicas_items.csv"
+OUTPUT_CSV = "ventas_historicas_items.csv"
 
 # Estados a ELIMINAR
 STATES_TO_REMOVE = [

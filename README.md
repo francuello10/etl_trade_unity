@@ -97,16 +97,16 @@ ETL Trade Unity/
 │   └── TradeUnity Commercial Calendar 2026.xlsx
 │
 ├── 📁 fuentes/              # Datos fuente
-│   ├── Catalogo TU.csv
-│   ├── stock erp.csv
-│   ├── Productos plataforma CEG_base price unit & fob_Tabla (2).csv
-│   ├── Publicaciones de productos.csv
-│   ├── Calendario comercial - Hoja de trabajo.csv
+│   ├── catalogo_trade_unity.csv
+│   ├── stock_erp.csv
+│   ├── precios_plataforma_ceg.csv
+│   ├── publicaciones_productos.csv
+│   ├── calendario_comercial_2026.csv
 │   └── trade_unity_documento_base.md
 │
 ├── 📁 inputs/               # Datos procesados
-│   ├── ventas_historicas_items_FINAL.csv
-│   └── Ventas.xlsx
+│   ├── ventas_historicas_items.csv
+│   └── ventas.xlsx
 │
 ├── 🛠️ scripts/              # Scripts Python de análisis
 │   ├── analisis_inventario.py
@@ -188,7 +188,7 @@ python3 scripts/analisis_inventario.py
 # 2. Sugerencias por Eventos Comerciales
 python3 scripts/sugerencias_productos_eventos_comerciales.py
 
-# 3. Mega Excel Completo (requiere ventas_historicas_items_FINAL.csv)
+# 3. Mega Excel Completo (requiere ventas_historicas_items.csv)
 python3 scripts/generar_mega_excel_completo_final.py
 
 # 4. Análisis de Inteligencia Comercial
@@ -208,7 +208,7 @@ Si necesitas actualizar los datos de ventas desde la API de Trade Unity:
 python3 scripts/export_ventas_tradeunity.py
 ```
 
-Esto generará `inputs/ventas_historicas_items_FINAL.csv` con los datos históricos.
+Esto generará `inputs/ventas_historicas_items.csv` con los datos históricos.
 
 ---
 
@@ -297,7 +297,7 @@ Los análisis incluyen:
 ### Requisitos de Datos
 
 - Los scripts requieren que los archivos fuente estén en `fuentes/`
-- Algunos scripts requieren `inputs/ventas_historicas_items_FINAL.csv` (generado por `export_ventas_tradeunity.py`)
+- Algunos scripts requieren `inputs/ventas_historicas_items.csv` (generado por `export_ventas_tradeunity.py`)
 - Todos los outputs se generan en `outputs/` con nombres normativos
 - Las columnas se autoajustan automáticamente para mejor visualización
 

@@ -11,9 +11,9 @@ from datetime import datetime
 from typing import Dict, Optional
 
 # Archivos
-TU_CSV = "fuentes/Catalogo TU.csv"
-INPUT_CSV = "ventas_historicas_items_FINAL.csv"
-OUTPUT_CSV = "ventas_historicas_items_FINAL.csv"
+TU_CSV = "fuentes/catalogo_trade_unity.csv"
+INPUT_CSV = "inputs/ventas_historicas_items.csv"
+OUTPUT_CSV = "inputs/ventas_historicas_items.csv"
 
 # Columnas a traer del catálogo TU
 TU_COLUMNS = {

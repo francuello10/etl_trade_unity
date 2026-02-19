@@ -10,7 +10,7 @@ from typing import Dict, Optional
 from datetime import datetime
 
 # Archivos
-CEG_CSV = "fuentes/Productos plataforma CEG_base price unit & fob_Tabla (2).csv"
+CEG_CSV = "fuentes/precios_plataforma_ceg.csv"
 INPUT_CSV = "ventas_historicas_items_limpio.csv"
 OUTPUT_CSV = "ventas_historicas_items_limpio_con_ceg.csv"
 
@@ -94,7 +94,7 @@ def load_ceg_catalog() -> Dict[str, Dict[str, str]]:
         print("   Verificando ruta alternativa...")
         # Intentar sin el subdirectorio
         try:
-            alt_path = "Productos plataforma CEG_base price unit & fob_Tabla (2).csv"
+            alt_path = "precios_plataforma_ceg.csv"
             with open(alt_path, "r", encoding="utf-8") as f:
                 reader = csv.DictReader(f)
                 count = 0

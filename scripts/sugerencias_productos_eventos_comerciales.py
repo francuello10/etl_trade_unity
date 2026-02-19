@@ -25,11 +25,11 @@ from collections import defaultdict
 import pandas as pd
 
 # Archivos
-CALENDARIO_CSV = "fuentes/Calendario comercial - Hoja de trabajo.csv"
-VENTAS_CSV = "inputs/ventas_historicas_items_FINAL.csv"  # Fuente: Ventas.xlsx hoja 01_Ventas
-STOCK_ERP = "fuentes/stock erp.csv"
-CATALOGO_TU = "fuentes/Catalogo TU.csv"
-CEG_PRODUCTOS_CSV = "fuentes/Productos plataforma CEG_base price unit & fob_Tabla (2).csv"
+CALENDARIO_CSV = "fuentes/calendario_comercial_2026.csv"
+VENTAS_CSV = "inputs/ventas_historicas_items.csv"  # Fuente: ventas.xlsx hoja 01_Ventas
+STOCK_ERP = "fuentes/stock_erp.csv"
+CATALOGO_TU = "fuentes/catalogo_trade_unity.csv"
+CEG_PRODUCTOS_CSV = "fuentes/precios_plataforma_ceg.csv"
 OUTPUT_DIR = "outputs"
 OUTPUT_EXCEL = f"{OUTPUT_DIR}/TradeUnity Commercial Calendar 2026.xlsx"
 

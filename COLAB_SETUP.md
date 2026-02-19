@@ -377,17 +377,17 @@ Los scripts actuales funcionan en Colab con mínimos cambios:
 
 ```python
 # ANTES (local):
-# df = pd.read_csv('fuentes/Catalogo TU.csv')
+# df = pd.read_csv('fuentes/catalogo_trade_unity.csv')
 
 # DESPUÉS (Colab):
 # Opción 1: Subir archivo a Colab
 from google.colab import files
 uploaded = files.upload()
-df = pd.read_csv('Catalogo TU.csv')
+df = pd.read_csv('catalogo_trade_unity.csv')
 
 # Opción 2: Leer desde Drive
 drive.mount('/content/drive')
-df = pd.read_csv('/content/drive/MyDrive/ETL Trade Unity/fuentes/Catalogo TU.csv')
+df = pd.read_csv('/content/drive/MyDrive/ETL Trade Unity/fuentes/catalogo_trade_unity.csv')
 
 # Opción 3: Leer desde BigQuery (mejor)
 query = "SELECT * FROM `project.dataset.catalog`"

@@ -10,7 +10,7 @@ from datetime import datetime, date
 from collections import defaultdict
 
 # Archivos
-VENTAS_CSV = "ventas_historicas_items_FINAL.csv"
+VENTAS_CSV = "ventas_historicas_items.csv"
 OUTPUT_CSV = "00_Resumen_Ejecutivo.csv"
 
 

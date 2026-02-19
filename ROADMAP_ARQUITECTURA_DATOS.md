@@ -24,11 +24,11 @@
 ### ✅ Lo que ya tenemos funcionando
 
 **Desarrollo Local (Cursor):**
-- ✅ Catálogo Trade Unity (`fuentes/Catalogo TU.csv`)
-- ✅ Stock ERP (`fuentes/stock erp.csv`)
-- ✅ Precios CEG Plataforma/FOB (`fuentes/Productos plataforma CEG_base price unit & fob_Tabla (2).csv`)
-- ✅ Publicaciones históricas (`fuentes/Publicaciones de productos.csv`)
-- ✅ Ventas históricas Trade Unity (`inputs/ventas_historicas_items_FINAL.csv`)
+- ✅ Catálogo Trade Unity (`fuentes/catalogo_trade_unity.csv`)
+- ✅ Stock ERP (`fuentes/stock_erp.csv`)
+- ✅ Precios CEG Plataforma/FOB (`fuentes/precios_plataforma_ceg.csv`)
+- ✅ Publicaciones históricas (`fuentes/publicaciones_productos.csv`)
+- ✅ Ventas históricas Trade Unity (`inputs/ventas_historicas_items.csv`)
 
 **Análisis Generados:**
 - ✅ 6 outputs profesionales (Executive Report + 5 Excel files)

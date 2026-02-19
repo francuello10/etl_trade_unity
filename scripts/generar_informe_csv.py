@@ -9,7 +9,7 @@ from decimal import Decimal, InvalidOperation
 from collections import defaultdict
 
 # Archivos
-INPUT_CSV = "ventas_historicas_items_FINAL.csv"
+INPUT_CSV = "ventas_historicas_items.csv"
 
 
 def parse_decimal(value: str) -> Decimal:

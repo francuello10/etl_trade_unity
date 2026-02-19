@@ -29,9 +29,9 @@ except ImportError:
     HAS_PANDAS = False
 
 # Archivos
-VENTAS_CSV = "inputs/ventas_historicas_items_FINAL.csv"  # Fuente: Ventas.xlsx hoja 01_Ventas
-STOCK_ERP = "fuentes/stock erp.csv"
-CATALOGO_TU = "fuentes/Catalogo TU.csv"
+VENTAS_CSV = "inputs/ventas_historicas_items.csv"  # Fuente: ventas.xlsx hoja 01_Ventas
+STOCK_ERP = "fuentes/stock_erp.csv"
+CATALOGO_TU = "fuentes/catalogo_trade_unity.csv"
 OUTPUT_DIR = "outputs"
 OUTPUT_EXCEL = f"{OUTPUT_DIR}/TradeUnity Sales Inventory Analysis.xlsx"
 

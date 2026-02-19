@@ -20,7 +20,7 @@ except ImportError:
     HAS_PANDAS = True
 
 # Archivos
-INPUT_CSV = "ventas_historicas_items_FINAL.csv"
+INPUT_CSV = "ventas_historicas_items.csv"
 OUTPUT_EXCEL = "Informe_Completo_Ventas_TradeUnity.xlsx"
 
 

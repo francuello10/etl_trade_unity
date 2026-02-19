@@ -12,7 +12,7 @@ from decimal import Decimal, InvalidOperation
 
 # Archivos
 INPUT_CSV = "ventas_historicas_items_limpio_con_ceg.csv"
-OUTPUT_CSV = "ventas_historicas_items_FINAL.csv"
+OUTPUT_CSV = "ventas_historicas_items.csv"
 
 # Columnas a ELIMINAR
 COLUMNS_TO_REMOVE = [

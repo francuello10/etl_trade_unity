@@ -29,9 +29,9 @@ except ImportError:
     HAS_PANDAS = False
 
 # Archivos
-CATALOGO_TU = "fuentes/Catalogo TU.csv"
-STOCK_ERP = "fuentes/stock erp.csv"
-CEG_PRODUCTOS_CSV = "fuentes/Productos plataforma CEG_base price unit & fob_Tabla (2).csv"
+CATALOGO_TU = "fuentes/catalogo_trade_unity.csv"
+STOCK_ERP = "fuentes/stock_erp.csv"
+CEG_PRODUCTOS_CSV = "fuentes/precios_plataforma_ceg.csv"
 OUTPUT_DIR = "outputs"
 OUTPUT_EXCEL = f"{OUTPUT_DIR}/TradeUnity Inventory Deep Dive.xlsx"
 

@@ -1345,11 +1345,11 @@ Estos clientes tienen **bajo volumen** (<$5K LTV), **bajo margen** (<50% sobre F
 
 ### A. Fuentes de Datos
 
-- `inputs/Ventas.xlsx` - Ventas históricas (14,036 registros)
-- `fuentes/Catalogo TU.csv` - Catálogo completo (3,615 productos)
-- `fuentes/stock erp.csv` - Stock actual del ERP (3,705 registros)
-- `fuentes/Productos plataforma CEG_base price unit & fob_Tabla (2).csv` - Precios CEG
-- `fuentes/Publicaciones de productos.csv` - Historial de publicaciones
+- `inputs/ventas.xlsx` - Ventas históricas (14,036 registros)
+- `fuentes/catalogo_trade_unity.csv` - Catálogo completo (3,615 productos)
+- `fuentes/stock_erp.csv` - Stock actual del ERP (3,705 registros)
+- `fuentes/precios_plataforma_ceg.csv` - Precios CEG
+- `fuentes/publicaciones_productos.csv` - Historial de publicaciones
 
 ### B. Scripts de Análisis
 

@@ -1,0 +1,25 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Datos sensibles (si hay)
+*.env
+.env.local
+
+# Outputs grandes (opcional - comentar si quieres commitear)
+# outputs/*.xlsx
+# outputs/*.md

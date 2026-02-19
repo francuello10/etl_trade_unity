@@ -13,6 +13,7 @@
 - [Instalación y Uso](#-instalación-y-uso)
 - [Stack Tecnológico](#-stack-tecnológico)
 - [Sobre Trade Unity](#-sobre-trade-unity)
+- [Roadmap y Arquitectura](#-roadmap-y-arquitectura)
 
 ---
 
@@ -124,13 +125,32 @@ ETL Trade Unity/
 
 ## 🚀 Instalación y Uso
 
+### 🎯 Opciones de Ejecución
+
+**Opción 1: Google Colab (Recomendado - 100% en línea)** ⭐
+- ✅ Spreadsheets automáticos en Google Sheets
+- ✅ Accesible desde cualquier lugar
+- ✅ No requiere instalación local
+- ✅ Automatización con Apps Script
+- Ver: [COLAB_SETUP.md](./COLAB_SETUP.md)
+
+**Opción 2: Local (Cursor/IDE)**
+- ✅ Desarrollo y testing
+- ✅ Control total del entorno
+- ✅ Requiere instalación local
+
 ### Requisitos
 
+**Para Local:**
 - Python 3.12+
 - pandas
 - openpyxl
 
-### Instalación
+**Para Colab:**
+- Solo necesitas cuenta Google (gratis)
+- Todo se instala automáticamente en el notebook
+
+### Instalación Local
 
 ```bash
 # Clonar repositorio
@@ -144,6 +164,17 @@ source venv/bin/activate  # En Windows: venv\Scripts\activate
 # Instalar dependencias
 pip install -r requirements.txt
 ```
+
+### Setup en Google Colab
+
+Ver guía completa en [COLAB_SETUP.md](./COLAB_SETUP.md)
+
+**Resumen rápido:**
+1. Crear notebook en [Google Colab](https://colab.research.google.com/)
+2. Instalar dependencias (primera celda)
+3. Configurar autenticación (Google Cloud, APIs)
+4. Ejecutar pipeline completo
+5. Spreadsheets se actualizan automáticamente
 
 ### Generar Análisis
 
@@ -250,6 +281,19 @@ Los análisis incluyen:
 
 **Contexto:** Los precios de plataforma y FOB tienden a la baja en muchos casos, lo cual puede explicar parcialmente los márgenes negativos observados. **Queda pendiente el cruce con los costos históricos reales** al momento de cada venta para un análisis más preciso de rentabilidad histórica.
 
+### 🆚 Colab vs Local vs Looker
+
+| Característica | **Colab** | **Local** | **Looker** |
+|---------------|-----------|-----------|------------|
+| **Accesibilidad** | ✅ 100% en línea | ❌ Requiere máquina | ✅ 100% en línea |
+| **Spreadsheets** | ✅ Automáticos | ❌ Manual | ✅ Dashboards |
+| **ETL Completo** | ✅ Sí | ✅ Sí | ❌ Solo visualización |
+| **Análisis Profundo** | ✅ Sí | ✅ Sí | ⚠️ Limitado |
+| **Costo** | ✅ Gratis | ✅ Gratis | 💰 Pago |
+| **Enfoque** | ETL + Análisis | ETL + Análisis | Dashboards visuales |
+
+**Nota:** Colab y Looker son **complementarios**. Colab hace el ETL y análisis profundo, Looker visualiza los resultados en dashboards interactivos.
+
 ### Requisitos de Datos
 
 - Los scripts requieren que los archivos fuente estén en `fuentes/`
@@ -268,6 +312,31 @@ Este es un repositorio interno para análisis de Trade Unity. Para contribucione
 ## 📄 Licencia
 
 Este proyecto es de uso interno del grupo CEG.
+
+---
+
+## 🗺️ Roadmap y Arquitectura
+
+### Estado Actual
+
+✅ **Sistema funcionando** con datos estáticos (CSV/Excel)  
+🚧 **En desarrollo:** Migración a sistema en tiempo real con Google Colab
+
+### Próximos Pasos
+
+Ver documentación completa:
+- **[ROADMAP_ARQUITECTURA_DATOS.md](./ROADMAP_ARQUITECTURA_DATOS.md)** - Plan completo de integración de fuentes
+- **[COLAB_SETUP.md](./COLAB_SETUP.md)** - Guía de setup en Google Colab
+
+### Fuentes a Integrar
+
+1. **BigQuery Trade Unity** (ventas) - 🎯 PRIORIDAD ALTA
+2. **Magento API** (productos) - 🎯 PRIORIDAD ALTA
+3. **CEG** (precios, ventas, clientes) - 🎯 PRIORIDAD ALTA
+4. **Connectif** (marketing) - 🎯 PRIORIDAD MEDIA-ALTA
+5. **GA4** (comportamiento web) - 🎯 PRIORIDAD MEDIA
+
+**Objetivo:** Sistema 100% en línea con spreadsheets automáticos actualizados.
 
 ---
 
